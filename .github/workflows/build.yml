@@ -1,0 +1,66 @@
+name: Build images
+
+on:
+  push:
+    branches: [main]
+    paths: ['images/**', '.github/workflows/build.yml']
+  schedule:
+    - cron: '0 20 1 * *'   # tiap tanggal 1 (03:00 WIB): ambil patch keamanan base image
+  workflow_dispatch:
+
+concurrency:
+  group: build-images
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: ${{ matrix.image }}:${{ matrix.tag }}
+    runs-on: [self-hosted, heavy, docker]
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - { image: ci-php,    tag: '8.3', args: 'PHP_VERSION=8.3' }
+          - { image: ci-php,    tag: '8.4', args: 'PHP_VERSION=8.4' }
+          - { image: ci-node,   tag: '22',  args: 'NODE_MAJOR=22' }
+          - { image: ci-python, tag: '3.12', args: 'PYTHON_VERSION=3.12' }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Folder image
+        id: dir
+        run: echo "path=images/${{ matrix.image }}" | sed 's|images/ci-|images/|' >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.dir.outputs.path }}
+          build-args: ${{ matrix.args }}
+          pull: true
+          push: true
+          tags: ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Uji cepat
+        run: |
+          img=ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}
+          case "${{ matrix.image }}" in
+            ci-php)    docker run --rm "$img" sh -c 'php -v | head -1 && php -m | grep -cE "pdo_mysql|intl|gd|zip|bcmath|calendar" && composer -V && node -v && bun -v' ;;
+            ci-node)   docker run --rm "$img" sh -c 'node -v && bun -v && git --version' ;;
+            ci-python) docker run --rm "$img" sh -c 'python -V && uv --version' ;;
+          esac
