@@ -1,4 +1,4 @@
-# ci-flutter: Flutter + Android SDK + JDK 17 untuk build APK/AAB.
+# ci-flutter: Flutter + Android SDK + JDK 17 (+ Node 22 untuk firebase-tools) untuk build APK/AAB.
 # Semua sudah terpasang di image, karena di kontainer cache tools tidak bertahan antar job.
 FROM docker.io/library/debian:bookworm
 
@@ -15,6 +15,8 @@ ENV PATH=$FLUTTER_HOME/bin:$PUB_CACHE/bin:$ANDROID_HOME/cmdline-tools/latest/bin
 RUN apt-get update -qq \
     && apt-get install -y -qq --no-install-recommends ca-certificates curl git unzip xz-utils zip openjdk-17-jdk-headless \
        libglu1-mesa file openssh-client rsync \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null \
+    && apt-get install -y -qq --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/* \
     && git config --system --add safe.directory '*'
 

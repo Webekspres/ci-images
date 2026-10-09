@@ -65,5 +65,5 @@ jobs:
             ci-php)    docker run --rm "$img" sh -c 'php -v | head -1 && php -m | grep -cE "pdo_mysql|intl|gd|zip|bcmath|calendar" && composer -V && node -v && bun -v' ;;
             ci-node)   docker run --rm "$img" sh -c 'node -v && bun -v && git --version' ;;
             ci-python) docker run --rm "$img" sh -c 'python -V && uv --version' ;;
-            ci-flutter) docker run --rm "$img" sh -c 'flutter --version && java -version 2>&1 | head -1 && sdkmanager --list_installed | head -8' ;;
+            ci-flutter) docker run --rm "$img" sh -c 'flutter --version && java -version 2>&1 | head -1 && node -v && sdkmanager --list_installed | head -8' ;;
           esac
