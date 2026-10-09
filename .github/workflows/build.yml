@@ -30,6 +30,7 @@ jobs:
           - { image: ci-php,    tag: '8.4', args: 'PHP_VERSION=8.4' }
           - { image: ci-node,   tag: '22',  args: 'NODE_MAJOR=22' }
           - { image: ci-python, tag: '3.12', args: 'PYTHON_VERSION=3.12' }
+          - { image: ci-flutter, tag: '3.44.6', args: 'FLUTTER_VERSION=3.44.6' }
     steps:
       - uses: actions/checkout@v4
 
@@ -64,4 +65,5 @@ jobs:
             ci-php)    docker run --rm "$img" sh -c 'php -v | head -1 && php -m | grep -cE "pdo_mysql|intl|gd|zip|bcmath|calendar" && composer -V && node -v && bun -v' ;;
             ci-node)   docker run --rm "$img" sh -c 'node -v && bun -v && git --version' ;;
             ci-python) docker run --rm "$img" sh -c 'python -V && uv --version' ;;
+            ci-flutter) docker run --rm "$img" sh -c 'flutter --version && java -version 2>&1 | head -1 && sdkmanager --list_installed | head -8' ;;
           esac

@@ -8,6 +8,7 @@ Dipakai lewat `container:` di job GitHub Actions, dan nanti oleh runner ARC.
 | `ghcr.io/webekspres/ci-php` | `8.3`, `8.4` | PHP + ekstensi Laravel/Bagisto, composer, Node 22, Bun, mysql-client |
 | `ghcr.io/webekspres/ci-node` | `22` | Node 22, Bun, git, openssl |
 | `ghcr.io/webekspres/ci-python` | `3.12` | Python 3.12, uv |
+| `ghcr.io/webekspres/ci-flutter` | `3.44.6` | Flutter 3.44.6, Android SDK (platform 37 + build-tools terbaru), JDK 17 |
 
 Contoh:
 
