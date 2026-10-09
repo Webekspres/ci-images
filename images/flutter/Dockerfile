@@ -5,6 +5,8 @@ FROM docker.io/library/debian:bookworm
 ARG FLUTTER_VERSION=3.44.6
 ARG ANDROID_API=37
 ARG CMDLINE_TOOLS=11076708
+# NDK yang dipakai Android Gradle Plugin proyek (miru-mobile-app); tanpa ini setiap build mengunduh ~1 GB.
+ARG NDK_VERSION=28.2.13676358
 
 ENV ANDROID_HOME=/opt/android-sdk ANDROID_SDK_ROOT=/opt/android-sdk \
     FLUTTER_HOME=/opt/flutter PUB_CACHE=/opt/pub-cache \
@@ -29,7 +31,7 @@ RUN mkdir -p $ANDROID_HOME/cmdline-tools \
     && BT=$(sdkmanager --list 2>/dev/null | grep -oE 'build-tools;[0-9]+\.[0-9]+\.[0-9]+ ' | sort -V | tail -1 | tr -d ' ') \
     && PF=$(sdkmanager --list 2>/dev/null | grep -oE "platforms;android-${ANDROID_API}(\.[0-9]+)?([^0-9 ][^ ]*)? " | sort -V | head -1 | tr -d ' ') \
     && echo "build-tools: $BT | platform: $PF" && [ -n "$PF" ] \
-    && sdkmanager --install "platform-tools" "$PF" "$BT" >/dev/null \
+    && sdkmanager --install "platform-tools" "$PF" "$BT" "ndk;${NDK_VERSION}" >/dev/null \
     && sdkmanager --list_installed
 
 # Flutter (versi dipatok) + artefak Android
