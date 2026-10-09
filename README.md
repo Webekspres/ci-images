@@ -13,7 +13,7 @@ Repo ini **publik**: jangan pernah menaruh rahasia di Dockerfile atau workflow.
 | `ghcr.io/webekspres/ci-php` | `8.2`, `8.3`, `8.4` | PHP (Debian bookworm) + ekstensi bcmath, calendar, exif, gd, gmp, intl, mysqli, opcache, pcntl, pdo_mysql, pdo_pgsql, redis, soap, sockets, zip; composer 2; Node 22 + npm; Bun 1; klien MySQL, Postgres, Redis |
 | `ghcr.io/webekspres/ci-node` | `20`, `22` | Node (Debian bookworm) + npm; Bun 1; git, openssl; klien MySQL, Postgres, Redis |
 | `ghcr.io/webekspres/ci-python` | `3.12` | Python + uv/uvx; git; klien MySQL, Postgres, Redis |
-| `ghcr.io/webekspres/ci-flutter` | `3.44.6` | Flutter 3.44.6, Android SDK (platform 37 + build-tools terbaru, cmdline-tools), JDK 17, Node 22 |
+| `ghcr.io/webekspres/ci-flutter` | `3.44.6` | Flutter 3.44.6, Android SDK (platform 37 + build-tools terbaru, cmdline-tools, NDK 28.2), JDK 17, Node 22 |
 
 Klien database dipakai oleh action [`tunggu-db`](https://github.com/Webekspres/.github/tree/main/actions/tunggu-db)
 (`mysqladmin`, `pg_isready`, `redis-cli`).
