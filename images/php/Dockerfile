@@ -1,4 +1,4 @@
-# ci-php: PHP + composer + Node/Bun untuk proyek Laravel/Bagisto (test, lint, build aset).
+# ci-php: PHP + composer + Node/Bun + klien MySQL/Postgres/Redis untuk proyek Laravel/Bagisto.
 ARG PHP_VERSION=8.3
 FROM docker.io/library/php:${PHP_VERSION}-cli-bookworm
 
@@ -11,7 +11,7 @@ RUN install-php-extensions \
 
 ARG NODE_MAJOR=22
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates curl git gnupg unzip default-mysql-client openssh-client rsync \
+    && apt-get install -y -qq --no-install-recommends ca-certificates curl git gnupg unzip default-mysql-client postgresql-client redis-tools openssh-client rsync \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - >/dev/null \
     && apt-get install -y -qq --no-install-recommends nodejs \
     && npm install -g bun@1 >/dev/null 2>&1 \

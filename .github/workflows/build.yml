@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write   # membuat rilis berisi daftar tag beku + digest
   packages: write
 
 jobs:
@@ -26,8 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { image: ci-php,    tag: '8.2', args: 'PHP_VERSION=8.2' }
           - { image: ci-php,    tag: '8.3', args: 'PHP_VERSION=8.3' }
           - { image: ci-php,    tag: '8.4', args: 'PHP_VERSION=8.4' }
+          - { image: ci-node,   tag: '20',  args: 'NODE_MAJOR=20' }
           - { image: ci-node,   tag: '22',  args: 'NODE_MAJOR=22' }
           - { image: ci-python, tag: '3.12', args: 'PYTHON_VERSION=3.12' }
           - { image: ci-flutter, tag: '3.44.6', args: 'FLUTTER_VERSION=3.44.6' }
@@ -42,11 +44,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Folder image
+      - name: Folder image dan tag beku
         id: dir
-        run: echo "path=images/${{ matrix.image }}" | sed 's|images/ci-|images/|' >> "$GITHUB_OUTPUT"
+        run: |
+          echo "path=images/${{ matrix.image }}" | sed 's|images/ci-|images/|' >> "$GITHUB_OUTPUT"
+          # Tag beku per build (tanggal UTC), tidak pernah ditimpa build berikutnya.
+          echo "date=$(date -u +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
 
       - uses: docker/build-push-action@v6
+        id: build
         with:
           context: ${{ steps.dir.outputs.path }}
           build-args: ${{ matrix.args }}
@@ -55,15 +61,59 @@ jobs:
           load: true
           cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.tag }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.tag }}
-          tags: ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}
+          tags: |
+            ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}
+            ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}-${{ steps.dir.outputs.date }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
 
       - name: Uji cepat
         run: |
           img=ghcr.io/webekspres/${{ matrix.image }}:${{ matrix.tag }}
           case "${{ matrix.image }}" in
-            ci-php)    docker run --rm "$img" sh -c 'php -v | head -1 && php -m | grep -cE "pdo_mysql|intl|gd|zip|bcmath|calendar" && composer -V && node -v && bun -v' ;;
-            ci-node)   docker run --rm "$img" sh -c 'node -v && bun -v && git --version' ;;
-            ci-python) docker run --rm "$img" sh -c 'python -V && uv --version' ;;
+            ci-php)    docker run --rm "$img" sh -c 'php -v | head -1 && php -m | grep -cE "pdo_mysql|intl|gd|zip|bcmath|calendar" && composer -V && node -v && bun -v && mysqladmin --version && pg_isready --version && redis-cli --version' ;;
+            ci-node)   docker run --rm "$img" sh -c 'node -v && bun -v && git --version && mysqladmin --version && pg_isready --version && redis-cli --version' ;;
+            ci-python) docker run --rm "$img" sh -c 'python -V && uv --version && mysqladmin --version && pg_isready --version && redis-cli --version' ;;
             ci-flutter) docker run --rm "$img" sh -c 'flutter --version && java -version 2>&1 | head -1 && node -v && sdkmanager --list_installed | head -8' ;;
           esac
+
+      - name: Catat digest
+        run: |
+          mkdir -p digest
+          printf '| `ghcr.io/webekspres/%s` | `%s` | `%s-%s` | `%s` |\n' \
+            "${{ matrix.image }}" "${{ matrix.tag }}" "${{ matrix.tag }}" "${{ steps.dir.outputs.date }}" "${{ steps.build.outputs.digest }}" \
+            > "digest/${{ matrix.image }}-${{ matrix.tag }}.md"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.image }}-${{ matrix.tag }}
+          path: digest/
+
+  rilis:
+    name: Rilis tag beku + digest
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: digest
+
+      - name: Buat atau perbarui rilis build-YYYY.MM.DD
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          d=$(date -u +%Y.%m.%d)
+          {
+            echo "Image yang dibangun pada $d (UTC). Kunci ke tag beku atau digest bila build harus reproduksibel."
+            echo
+            echo "| Image | Tag bergerak | Tag beku | Digest |"
+            echo "|---|---|---|---|"
+            sort digest/*.md
+          } > notes.md
+          if gh release view "build-$d" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "build-$d" -R "$GITHUB_REPOSITORY" --notes-file notes.md
+          else
+            gh release create "build-$d" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Build $d" --notes-file notes.md
+          fi
