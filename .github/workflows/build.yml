@@ -29,16 +29,15 @@ jobs:
           - { image: ci-php,    tag: '8.2', args: 'PHP_VERSION=8.2' }
           - { image: ci-php,    tag: '8.3', args: 'PHP_VERSION=8.3' }
           - { image: ci-php,    tag: '8.4', args: 'PHP_VERSION=8.4' }
-          - { image: ci-node,   tag: '20',  args: 'NODE_MAJOR=20' }
           - { image: ci-node,   tag: '22',  args: 'NODE_MAJOR=22' }
           - { image: ci-python, tag: '3.12', args: 'PYTHON_VERSION=3.12' }
           - { image: ci-flutter, tag: '3.44.6', args: 'FLUTTER_VERSION=3.44.6' }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -51,7 +50,7 @@ jobs:
           # Tag beku per build (tanggal UTC), tidak pernah ditimpa build berikutnya.
           echo "date=$(date -u +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         id: build
         with:
           context: ${{ steps.dir.outputs.path }}
@@ -83,7 +82,7 @@ jobs:
             "${{ matrix.image }}" "${{ matrix.tag }}" "${{ matrix.tag }}" "${{ steps.dir.outputs.date }}" "${{ steps.build.outputs.digest }}" \
             > "digest/${{ matrix.image }}-${{ matrix.tag }}.md"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: digest-${{ matrix.image }}-${{ matrix.tag }}
           path: digest/
@@ -94,7 +93,7 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: digest-*
           merge-multiple: true
