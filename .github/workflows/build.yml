@@ -32,6 +32,7 @@ jobs:
           - { image: ci-node,   tag: '22',  args: 'NODE_MAJOR=22' }
           - { image: ci-python, tag: '3.12', args: 'PYTHON_VERSION=3.12' }
           - { image: ci-flutter, tag: '3.44.6', args: 'FLUTTER_VERSION=3.44.6' }
+          - { image: ci-flutter, tag: '3.47.4', args: 'FLUTTER_VERSION=3.47.4' }
     steps:
       - uses: actions/checkout@v7
 
