@@ -11,7 +11,7 @@ RUN install-php-extensions \
 
 ARG NODE_MAJOR=22
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates curl git gnupg unzip default-mysql-client postgresql-client redis-tools openssh-client rsync \
+    && apt-get install -y -qq --no-install-recommends ca-certificates curl git gnupg jq unzip default-mysql-client postgresql-client redis-tools openssh-client rsync \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - >/dev/null \
     && apt-get install -y -qq --no-install-recommends nodejs \
     && npm install -g bun@1 >/dev/null 2>&1 \

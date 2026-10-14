@@ -3,7 +3,7 @@ ARG NODE_MAJOR=22
 FROM docker.io/library/node:${NODE_MAJOR}-bookworm
 
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates git openssl openssh-client rsync unzip default-mysql-client postgresql-client redis-tools \
+    && apt-get install -y -qq --no-install-recommends ca-certificates git jq openssl openssh-client rsync unzip default-mysql-client postgresql-client redis-tools \
     && rm -rf /var/lib/apt/lists/* \
     && npm install -g bun@1 >/dev/null 2>&1 && rm -rf /root/.npm \
     && git config --system --add safe.directory '*'
