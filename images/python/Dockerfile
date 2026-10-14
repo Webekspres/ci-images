@@ -4,7 +4,7 @@ FROM docker.io/library/python:${PYTHON_VERSION}-bookworm
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates git openssh-client rsync default-mysql-client postgresql-client redis-tools \
+    && apt-get install -y -qq --no-install-recommends ca-certificates git jq openssh-client rsync default-mysql-client postgresql-client redis-tools \
     && rm -rf /var/lib/apt/lists/* \
     && git config --system --add safe.directory '*'
 

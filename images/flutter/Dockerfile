@@ -15,7 +15,7 @@ ENV ANDROID_HOME=/opt/android-sdk ANDROID_SDK_ROOT=/opt/android-sdk \
 ENV PATH=$FLUTTER_HOME/bin:$PUB_CACHE/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
 RUN apt-get update -qq \
-    && apt-get install -y -qq --no-install-recommends ca-certificates curl git unzip xz-utils zip openjdk-17-jdk-headless \
+    && apt-get install -y -qq --no-install-recommends ca-certificates curl git jq unzip xz-utils zip openjdk-17-jdk-headless \
        libglu1-mesa file openssh-client rsync \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null \
     && apt-get install -y -qq --no-install-recommends nodejs \
